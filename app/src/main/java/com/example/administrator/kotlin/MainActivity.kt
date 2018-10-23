@@ -4,11 +4,7 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import io.reactivex.Observable
-import io.reactivex.ObservableEmitter
-import io.reactivex.ObservableOnSubscribe
-import io.reactivex.Observer
-import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Function
+import io.reactivex.functions.Consumer
 
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
@@ -546,38 +542,112 @@ class MainActivity : AppCompatActivity() {
             }
 
         })*/
-        Observable.create(object:ObservableOnSubscribe<Int>{
-            override fun subscribe(emitter: ObservableEmitter<Int>) {
-                emitter.onNext(1)
-                emitter.onNext(2)
-                emitter.onError(Throwable("抛出了一个错误"))
-            }
+        /* Observable.create(object:ObservableOnSubscribe<Int>{
+             override fun subscribe(emitter: ObservableEmitter<Int>) {
+                 emitter.onNext(1)
+                 emitter.onNext(2)
+                 emitter.onError(Throwable("抛出了一个错误"))
+             }
 
-        }).onErrorReturn(object:Function<Throwable,Int>{
-            override fun apply(t: Throwable): Int {
-                Log.d(TAG,"在onErrorReturn中处理错误"+t.toString())
-                return 333
-            }
+         })
+                 //在该方法中对抛出的错误进行处理，并返回一个新的事件
+                 .onErrorReturn(object:Function<Throwable,Int>{
+             override fun apply(t: Throwable): Int {
+                 Log.d(TAG,"在onErrorReturn中处理错误"+t.toString())
+                 return 333
+             }
 
-        }).subscribe(object:Observer<Int>{
-            override fun onComplete() {
-                Log.d(TAG,"处理Complete事件")
-            }
+         }).subscribe(object:Observer<Int>{
+             override fun onComplete() {
+                 Log.d(TAG,"处理Complete事件")
+             }
 
-            override fun onSubscribe(d: Disposable) {
-            }
+             override fun onSubscribe(d: Disposable) {
+             }
 
-            override fun onError(e: Throwable) {
-                Log.d(TAG,"处理Error事件")
-            }
+             override fun onError(e: Throwable) {
+                 Log.d(TAG,"处理Error事件")
+             }
 
-            override fun onNext(t: Int) {
-                Log.d(TAG,"接收到事件"+t.toString())
-            }
+             override fun onNext(t: Int) {
+                 Log.d(TAG,"接收到事件"+t.toString())
+             }
 
-        })
+         })*/
 
         /*====================================RxJava功能操作符end===============================================*/
+
+        /*====================================RxJava过滤操作符start===============================================*/
+        /* Observable.create(object : ObservableOnSubscribe<Int> {
+             override fun subscribe(emitter: ObservableEmitter<Int>) {
+                 emitter.onNext(1)
+                 emitter.onNext(2)
+                 emitter.onNext(3)
+                 emitter.onNext(4)
+                 emitter.onNext(5)
+             }
+
+         })
+                 //filter()变换操作符，返回true的事件发送，false不会发送
+                 .filter(object : Predicate<Int> {
+             override fun test(t: Int): Boolean {
+                 return t > 3
+             }
+
+         }).subscribe(object: Observer<Int> {
+             override fun onComplete() {
+             }
+
+             override fun onError(e: Throwable) {
+             }
+
+             override fun onNext(t: Int) {
+                 Log.d(TAG,"接收到事件"+t.toString())
+             }
+
+             override fun onSubscribe(d: Disposable) {
+             }
+
+         })*/
+
+        //ofType()筛选出指定类型的进行事件发送
+/*        Observable.just(1, 2, "a", "b", 4)
+                .ofType(String::class.java)
+                .subscribe(object : Consumer<String> {
+                    override fun accept(t: String?) {
+                        Log.d(TAG, "接收到数据:" + t)
+                    }
+
+                })*/
+
+ /*       Observable.just(1,2,3,4,5)
+                .skip(1)//跳过正序的第一项
+                .skipLast(2)//跳过正序的最后两项
+                .subscribe(object:Consumer<Int>{
+                    override fun accept(t: Int?) {
+                        Log.d(TAG,"接收到数据"+t)
+                    }
+
+                })*/
+
+/*        Observable.just(1,2,3,4,1,3)
+                .distinct()//过滤掉重复事件
+                .subscribe(object:Consumer<Int>{
+                    override fun accept(t: Int?) {
+                        Log.d(TAG,"接收到事件"+t)
+                    }
+
+                })*/
+
+        Observable.just(1,2,3,3,4,4)
+                .distinctUntilChanged()//过滤掉连续重复事件
+                .subscribe(object:Consumer<Int>{
+                    override fun accept(t: Int?) {
+                        Log.d(TAG,"接收到事件"+t)
+                    }
+
+                })
+        /*====================================RxJava过滤操作符end===============================================*/
 
     }
 

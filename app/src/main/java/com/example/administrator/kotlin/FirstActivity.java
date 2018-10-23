@@ -5,14 +5,11 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import java.util.concurrent.TimeUnit;
-
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Consumer;
 
 /**
@@ -85,6 +82,15 @@ public class FirstActivity  extends AppCompatActivity{
 
                     @Override
                     public void onComplete() {
+
+                    }
+                });
+
+        Observable.just(1,2,"a","b",4)
+                .ofType(Integer.class)
+                .subscribe(new Consumer<Integer>() {
+                    @Override
+                    public void accept(Integer integer) throws Exception {
 
                     }
                 });
