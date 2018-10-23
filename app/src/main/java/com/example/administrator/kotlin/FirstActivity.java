@@ -5,11 +5,15 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import java.util.concurrent.TimeUnit;
+
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
 
 /**
  * 作  者: Rochin
@@ -56,6 +60,7 @@ public class FirstActivity  extends AppCompatActivity{
                 Log.d(TAG,"onComplete()被调用");
             }
         };
+
 
         observable.subscribe(observer);
 
