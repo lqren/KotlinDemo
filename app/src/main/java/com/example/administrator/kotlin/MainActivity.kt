@@ -3,8 +3,8 @@ package com.example.administrator.kotlin
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import io.reactivex.Observable
-import io.reactivex.functions.Consumer
+import io.reactivex.*
+import org.reactivestreams.Subscription
 
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity() {
                            }
                        })*/
 
-/*        //interval每间隔指定时间发送事件
+/*        //interval每间隔指定时间发送事件  注意：只能Int类型
         //第一个参数:第一次延迟时间
         //第二个参数:后面每次延迟时间
         Observable.interval(3, 1, TimeUnit.SECONDS)
@@ -620,15 +620,15 @@ class MainActivity : AppCompatActivity() {
 
                 })*/
 
- /*       Observable.just(1,2,3,4,5)
-                .skip(1)//跳过正序的第一项
-                .skipLast(2)//跳过正序的最后两项
-                .subscribe(object:Consumer<Int>{
-                    override fun accept(t: Int?) {
-                        Log.d(TAG,"接收到数据"+t)
-                    }
+        /*       Observable.just(1,2,3,4,5)
+                       .skip(1)//跳过正序的第一项
+                       .skipLast(2)//跳过正序的最后两项
+                       .subscribe(object:Consumer<Int>{
+                           override fun accept(t: Int?) {
+                               Log.d(TAG,"接收到数据"+t)
+                           }
 
-                })*/
+                       })*/
 
 /*        Observable.just(1,2,3,4,1,3)
                 .distinct()//过滤掉重复事件
@@ -639,16 +639,152 @@ class MainActivity : AppCompatActivity() {
 
                 })*/
 
-        Observable.just(1,2,3,3,4,4)
+/*        Observable.just(1,2,3,3,4,4)
                 .distinctUntilChanged()//过滤掉连续重复事件
                 .subscribe(object:Consumer<Int>{
                     override fun accept(t: Int?) {
                         Log.d(TAG,"接收到事件"+t)
                     }
 
-                })
+                })*/
+
+        //take/takeLast只发送指定数量的事件
+        //throttleFirst（）/ throttleLast（）在某段时间内只发送第一个事件或者最后一个事件
+        //throttleWithTimeout （） / debounce（）发送数据事件时，若2次发送事件的间隔＜指定时间，就会丢弃前一次的数据，直到指定时间内都没有新数据发射时才会发送后一次的数据
+        //firstElement（） / lastElement（） 第一个事件/最后一个事件
+        //elementAt（）指定某个位置事件
         /*====================================RxJava过滤操作符end===============================================*/
 
+
+        /*====================================RxJava条件/布尔操作符start===============================================*/
+/*        Observable.just(1, 2, 3, 4)
+                //所有的item是否都满足某条件
+                .all(object : Predicate<Int> {
+                    override fun test(t: Int): Boolean {
+                        return t > 1
+                    }
+
+                }).subscribe(object : Consumer<Boolean> {
+            override fun accept(t: Boolean?) {
+                Log.d(TAG, "结果是:" + t)
+            }
+
+        })*/
+
+/*        Observable.just(1, 2, 3, 4)
+                //判断每项是否满足条件，如果前面有不满足条件的，那么后面的事件将不会发送
+                .takeWhile(object : Predicate<Int> {
+                    override fun test(t: Int): Boolean {
+                        return t > 2
+                    }
+
+                }).subscribe(object:Observer<Int>{
+            override fun onError(e: Throwable) {
+            }
+
+            override fun onComplete() {
+                Log.d(TAG,"Complete")
+            }
+
+            override fun onSubscribe(d: Disposable) {
+            }
+
+            override fun onNext(t: Int) {
+                Log.d(TAG,"接收到结果为:"+t)
+            }
+
+        })*/
+
+/*        Observable.just(1, 2, 3, 4,5,6,7)
+                //当条件返回false时才发送事件
+                .skipWhile(object : Predicate<Int> {
+                    override fun test(t: Int): Boolean {
+                        return t <4
+                    }
+
+                }).subscribe(object : Observer<Int> {
+            override fun onSubscribe(d: Disposable) {
+            }
+
+            override fun onComplete() {
+            }
+
+            override fun onNext(t: Int) {
+                Log.d(TAG, "接收到的数据:" + t)
+            }
+
+            override fun onError(e: Throwable) {
+            }
+
+        })*/
+
+        /* Observable.just(1, 2, 3, 4, 5)
+                 //当满足条件时就停止发送数据，但是当前的数据会继续发送
+                 .takeUntil(object : Predicate<Int> {
+                     override fun test(t: Int): Boolean {
+                         return t > 2
+                     }
+
+                 }).subscribe(object : Observer<Int> {
+             override fun onError(e: Throwable) {
+             }
+
+             override fun onComplete() {
+             }
+
+             override fun onNext(t: Int) {
+                 Log.d(TAG, "接收到事件:" + t)
+             }
+
+             override fun onSubscribe(d: Disposable) {
+             }
+
+         })*/
+
+        Observable
+                //判断两个数据源是否相同
+                .sequenceEqual(Observable.just(1, 2, 3), Observable.just(1, 2, 3))
+
+        //contains判断指定的值在某事件中是否存在
+        //isEmpty判断某个事件是否为空
+        //defaultIfEmpty（） 当没有发送任何事件，仅发送Complete事件的前提下，发送一个默认的值
+        /*====================================RxJava条件/布尔操作符end===============================================*/
+
+
+        /*====================================RxJava背压start===============================================*/
+        //概述:背压是因为在被观察者发送事件的速度很快，而观察者来不及处理事件，最终导致缓存区溢出，事件丢失。
+        //背压策略:控制事件发送速度(只对异步订阅有效)，对于同步订阅控制发送速度是无效的
+        //在Rxjava2.0之后处理背压Flowable
+        Flowable.create(object : FlowableOnSubscribe<Int> {
+            override fun subscribe(emitter: FlowableEmitter<Int>) {
+                emitter.onNext(1)
+                emitter.onNext(2)
+                emitter.onNext(3)
+                emitter.onNext(4)
+                emitter.onComplete()
+            }
+
+        }, BackpressureStrategy.ERROR)
+                .subscribe(object : FlowableSubscriber<Int> {
+                    override fun onSubscribe(s: Subscription) {
+                        Log.d(TAG, "Subscribe")
+                        s.request(3)
+                    }
+
+                    override fun onComplete() {
+                        Log.d(TAG, "Complete")
+                    }
+
+                    override fun onNext(t: Int?) {
+                        Log.d(TAG, "接收到数据" + t)
+                    }
+
+                    override fun onError(t: Throwable?) {
+                        Log.d(TAG, "Error:" + t)
+                    }
+
+                })
+        /*====================================RxJava背压end===============================================*/
     }
 
 
