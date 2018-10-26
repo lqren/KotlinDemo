@@ -8,7 +8,7 @@ import org.reactivestreams.Subscription
 
 class MainActivity : AppCompatActivity() {
     private val TAG = "MainActivity"
-
+    private var e: Int? = 0
     private val items = listOf(
             "Mon 6/23 - Sunny - 31/17",
             "Tue 6/24 - Foggy - 21/8",
@@ -741,33 +741,91 @@ class MainActivity : AppCompatActivity() {
 
          })*/
 
-        Observable
+/*        Observable
                 //判断两个数据源是否相同
-                .sequenceEqual(Observable.just(1, 2, 3), Observable.just(1, 2, 3))
+                .sequenceEqual(Observable.just(1, 2, 3), Observable.just(1, 2, 3))*/
 
         //contains判断指定的值在某事件中是否存在
         //isEmpty判断某个事件是否为空
         //defaultIfEmpty（） 当没有发送任何事件，仅发送Complete事件的前提下，发送一个默认的值
+
+        /*  Observable.create(ObservableOnSubscribe<Int> { emitter ->
+
+
+              //            if (e!! >= 1) {
+
+  //            } else {
+  //            emitter.onNext(2)
+              emitter.onError(RuntimeException("订阅失败"))
+  //            }
+
+              emitter.onNext(3)
+
+              emitter.onNext(4)
+          }).retryWhen { throwableObservable ->
+              throwableObservable.zipWith(Observable.range(1, 3), object : BiFunction<Throwable, Int, Any> {
+                  override fun apply(t1: Throwable, t2: Int): Any {
+                      e = e!! + 1
+                      if(t2 == 2){
+                          Log.d(TAG,t1.message)
+                      }
+
+                      return Observable.timer(3, TimeUnit.SECONDS)
+                  }
+
+              })
+          }.flatMap(object : Function<Int, ObservableSource<Int>> {
+              override fun apply(t: Int): ObservableSource<Int> {
+                  return Observable.just(6, 7, 8, 9, 10)
+              }
+          }).subscribe(object : Observer<Int> {
+              override fun onNext(t: Int) {
+                  Log.d(TAG, "接收到结果:" + t)
+              }
+
+              override fun onSubscribe(d: Disposable) {
+
+              }
+
+              override fun onError(e: Throwable) {
+                  Log.d(TAG, "error" + e.message)
+              }
+
+              override fun onComplete() {
+                  Log.d(TAG, "onComplete")
+              }
+          })*/
         /*====================================RxJava条件/布尔操作符end===============================================*/
 
 
         /*====================================RxJava背压start===============================================*/
         //概述:背压是因为在被观察者发送事件的速度很快，而观察者来不及处理事件，最终导致缓存区溢出，事件丢失。
-        //背压策略:控制事件发送速度(只对异步订阅有效)，对于同步订阅控制发送速度是无效的
+        //背压策略:控制事件发送速度(只对异步订阅有效)，对于同步订阅控制发送速度是无效的(同步的控制事件发送速度依然会异常)
+        //因为异步订阅会有缓存区，而对于同步订阅没有缓存区说法
         //在Rxjava2.0之后处理背压Flowable
         Flowable.create(object : FlowableOnSubscribe<Int> {
             override fun subscribe(emitter: FlowableEmitter<Int>) {
-                emitter.onNext(1)
-                emitter.onNext(2)
-                emitter.onNext(3)
-                emitter.onNext(4)
+                /*      emitter.onNext(1)
+                      emitter.onNext(2)
+                      emitter.onNext(3)
+                      emitter.onNext(4)*/
+                //异步订阅在这里无法获取到下面Subscription.requested()方法指定的能接收到的观察数，只能获取到默认的128
+                Log.d(TAG,"可以接收"+emitter.requested()+"个事件")
+                for (i in 0..emitter.requested().toInt()) {
+                    emitter.onNext(i)
+                }
                 emitter.onComplete()
             }
 
-        }, BackpressureStrategy.ERROR)
+        }, BackpressureStrategy.BUFFER)
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+
                 .subscribe(object : FlowableSubscriber<Int> {
                     override fun onSubscribe(s: Subscription) {
                         Log.d(TAG, "Subscribe")
+                        //在同步的订阅当中多个request可以叠加
+                        s.request(5)
                         s.request(3)
                     }
 
@@ -784,6 +842,13 @@ class MainActivity : AppCompatActivity() {
                     }
 
                 })
+        /* 被压模式类型：
+        *       1、BackpressureStrategy.ERROR  直接抛出异常MissingBackpressureException
+        *       2、BackpressureStrategy.MISSING 友好提示缓存区已满
+        * */
+
+
+
         /*====================================RxJava背压end===============================================*/
     }
 
